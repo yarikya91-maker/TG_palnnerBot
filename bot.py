@@ -3,9 +3,9 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import os
 
-app = Flask(_name_)
+app = Flask(__name__)
 
-TOKEN = os.environ.get("BOT_TOKEN", "впиши_сюда_твой_токен_бота_из_BotFather")
+TOKEN = os.environ.get("BOT_TOKEN", "8360295636AAFQCVsL8WDlCNQrMRHXAE15XWT19gy6xUQ")
 
 @app.route('/')
 def home():
