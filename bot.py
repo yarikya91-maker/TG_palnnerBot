@@ -3,9 +3,9 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import os
 import threading
+import asyncio
 import logging
 
-# Включаем логи
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
@@ -18,16 +18,24 @@ def home():
 
 # Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Бот запущен и работает 💪")
+    await update.message.reply_text("Бот запущен и отвечает 💬")
 
 def run_bot():
     if not TOKEN:
         print("❌ Ошибка: BOT_TOKEN не найден!")
         return
+
     print("🚀 Запускаем Telegram-бота...")
+
+    # создаём отдельный event loop для потока
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    loop = asyncio.get_event_loop()
+
     application = ApplicationBuilder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
-    application.run_polling()
+
+    # запускаем polling в этом event loop
+    loop.run_until_complete(application.run_polling())
 
 def run_flask():
     port = int(os.environ.get("PORT", 5000))
@@ -36,4 +44,4 @@ def run_flask():
 
 if __name__ == '__main__':
     threading.Thread(target=run_bot).start()
-    run_flask()
+    run_flask()з
