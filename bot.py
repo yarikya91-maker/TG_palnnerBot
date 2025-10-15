@@ -2,38 +2,38 @@ from flask import Flask
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import os
-import asyncio
+import threading
+import logging
 
-# Flask для Render
+# Включаем логи
+logging.basicConfig(level=logging.INFO)
+
 app = Flask(__name__)
+
+TOKEN = os.environ.get("BOT_TOKEN", "")
 
 @app.route('/')
 def home():
     return "Бот работает! ✅"
 
-# Получаем токен из Render → Environment
-TOKEN = os.environ.get("BOT_TOKEN", "")
-
 # Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Бот запущен и работает 💪")
 
-# Асинхронный запуск Telegram-бота
-async def run_bot():
-    app_tg = ApplicationBuilder().token(TOKEN).build()
-    app_tg.add_handler(CommandHandler("start", start))
-    await app_tg.initialize()
-    await app_tg.start()
-    await app_tg.updater.start_polling()
-    await asyncio.Event().wait()  # держим бота активным
+def run_bot():
+    if not TOKEN:
+        print("❌ Ошибка: BOT_TOKEN не найден!")
+        return
+    print("🚀 Запускаем Telegram-бота...")
+    application = ApplicationBuilder().token(TOKEN).build()
+    application.add_handler(CommandHandler("start", start))
+    application.run_polling()
 
-# Flask + Telegram в одном цикле
-def main():
-    loop = asyncio.get_event_loop()
-    loop.create_task(run_bot())
-
+def run_flask():
     port = int(os.environ.get("PORT", 5000))
+    print(f"🌐 Flask запущен на порту {port}")
     app.run(host="0.0.0.0", port=port)
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    threading.Thread(target=run_bot).start()
+    run_flask()
